@@ -1,0 +1,38 @@
+body{
+  background-image: url("https://opengameart.org/sites/default/files/grass_template2.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  margin: 0;
+  padding: 0;
+}
+
+.head{
+  font-family: "Pixelify Sans", sans-serif;
+  font-size: 4rem;
+  text-align: center;
+  height: 10vh;
+  margin-bottom: 5vh;
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  height: fit-content;
+  margin: auto;
+  border: 1px solid black; 
+}
+
+.row{
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  
+}
+
+.cell{
+  width: 4vh;
+  height: 4vh;
+  border: 1px solid black;  
+  box-sizing: border-box;     
+}
