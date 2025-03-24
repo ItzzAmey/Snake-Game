@@ -1,4 +1,4 @@
-import { React, useCallback, useEffect, useState } from "react";
+import { React, useCallback, useEffect, useRef, useState } from "react";
 
 const BOARD_SIZE = 20;
 
@@ -7,32 +7,40 @@ function Game() {
     const [fruit, setFruit] = useState(217);
     const [snake, setSnake] = useState([207]);
     const [direction, setDirection] = useState("RIGHT");
-    const [board, setBoard] = useState(new Array(BOARD_SIZE).fill(null).map(() => new Array(BOARD_SIZE).fill(0)));
+    const boardRef = useRef(null);
+    const board = new Array(BOARD_SIZE).fill(null).map(() => (new Array(BOARD_SIZE).fill(0)));
+
+    useEffect(() => {
+        if (boardRef.current) {
+            boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = "red";
+        }
+    }, [fruit])
 
     useEffect(() => {
         function handleKeyDown(event) {
-            switch (event.key) {
-                case "ArrowUp":
-                    if (direction !== "DOWN") setDirection("UP");
-                    break;
-                case "ArrowDown":
-                    if (direction !== "UP") setDirection("DOWN");
-                    break;
-                case "ArrowLeft":
-                    if (direction !== "RIGHT") setDirection("LEFT");
-                    break;
-                case "ArrowRight":
-                    if (direction !== "LEFT") setDirection("RIGHT");
-                    break;
-                default:
-                    break;
-            }
+            setDirection((prev) => {
+                switch (event.key) {
+                    case "ArrowUp":
+                        return prev !== "DOWN" ? "UP" : prev;
+                    case "ArrowDown":
+                        return prev !== "UP" ? "DOWN" : prev;
+                    case "ArrowLeft":
+                        return prev !== "RIGHT" ? "LEFT" : prev;
+                    case "ArrowRight":
+                        return prev !== "LEFT" ? "RIGHT" : prev;
+                    default:
+                        return prev;
+                }
+            });
         }
-        window.addEventListener("keydown", handleKeyDown)
-        return () => { // VVIP AS EVENT LISTENERS GET STACKED
-            window.removeEventListener('keydown', handleKeyDown);
+
+        window.addEventListener("keydown", handleKeyDown);
+        console.log(direction);
+        return () => {
+            console.log("Cleaning up...");
+            window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [direction])
+    }, []); // The single event listener is there until the component unmounts(is remove from the Virtual DOM)
 
     const generateFruit = useCallback(() => {
         var pos = Math.floor(Math.random() * 400);
@@ -41,101 +49,86 @@ function Game() {
     }, [snake])
 
     const renderSnakeAndFruit = useCallback(() => {
-        // Check if allowed
         if (direction === "UP") {
-            if ((snake[0] <= 19 && snake[0] >= 0) || (snake.includes(snake[0] - 20))) {
+            if ((snake[0] <= (BOARD_SIZE - 1) && snake[0] >= 0) || snake.includes(snake[0] - BOARD_SIZE)) {
                 setGameOn(0);
                 return;
-            }
-            else {
-                if (snake[0] - 20 === fruit) {
-                    setSnake((prev) => {
-                        return [prev[0] - 20, ...prev];
-                    });
+            } else {
+                let newHead = snake[0] - BOARD_SIZE;
+                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
 
-                    setFruit(generateFruit());
+                if (newHead === fruit) {
+                    setSnake((prev) => [newHead, ...prev]);
+                    setFruit(() => generateFruit());
                 }
                 else {
-                    setSnake((prev) => {
-                        return [prev[0] - 20, ...prev.filter((element, index) => {
-                            return index !== prev.length - 1;
-                        })];
-                    });
+                    let tail = snake.at(-1);
+                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
+                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
                 }
             }
         }
 
         else if (direction === "DOWN") {
-            if ((snake[0] <= 399 && snake[0] >= 380) || (snake.includes(snake[0] + 20))) {
+            if ((snake[0] >= 380 && snake[0] <= 399) || snake.includes(snake[0] + BOARD_SIZE)) {
                 setGameOn(0);
                 return;
-            }
-            else {
-                if (snake[0] + 20 === fruit) {
-                    setSnake((prev) => {
-                        return [prev[0] + 20, ...prev];
-                    });
+            } else {
+                let newHead = snake[0] + BOARD_SIZE;
+                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
 
-                    setFruit(generateFruit());
-                }
-                else {
-                    setSnake((prev) => {
-                        return [prev[0] + 20, ...prev.filter((element, index) => {
-                            return index !== prev.length - 1;
-                        })];
-                    });
+                if (newHead === fruit) {
+                    setSnake((prev) => [newHead, ...prev]);
+                    setFruit(() => generateFruit());
+                } else {
+                    let tail = snake.at(-1);
+                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
+                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
                 }
             }
         }
+
         else if (direction === "RIGHT") {
-            if (((snake[0] + 1) % 20 === 0) || (snake.includes(snake[0] + 1))) {
+            if ((snake[0] + 1) % BOARD_SIZE === 0 || snake.includes(snake[0] + 1)) {
                 setGameOn(0);
                 return;
-            }
-            else {
-                if (snake[0] + 1 === fruit) {
-                    setSnake((prev) => {
-                        return [prev[0] + 1, ...prev];
-                    });
+            } else {
+                let newHead = snake[0] + 1;
+                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
 
-                    setFruit(generateFruit());
+                if (newHead === fruit) {
+                    setSnake((prev) => [newHead, ...prev]);
+                    setFruit(() => generateFruit());
                 }
+
                 else {
-                    setSnake((prev) => {
-                        return [prev[0] + 1, ...prev.filter((element, index) => {
-                            return index !== prev.length - 1;
-                        })];
-                    });
+                    let tail = snake.at(-1);
+                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
+                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
                 }
             }
         }
 
-        else {
-            if (((snake[0]) % 20 === 0) || (snake.includes(snake[0] - 1))) {
+        else { // LEFT
+            if (snake[0] % BOARD_SIZE === 0 || snake.includes(snake[0] - 1)) {
                 setGameOn(0);
                 return;
-            }
-            else {
-                if (snake[0] - 1 === fruit) {
-                    setSnake((prev) => {
-                        return [prev[0] - 1, ...prev];
-                    });
+            } else {
+                let newHead = snake[0] - 1;
+                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
 
-                    setFruit(generateFruit());
-                }
-                else {
-                    setSnake((prev) => {
-                        return [prev[0] - 1, ...prev.filter((element, index) => {
-                            return index !== prev.length - 1;
-                        })];
-                    });
+                if (newHead === fruit) {
+                    setSnake((prev) => [newHead, ...prev]);
+                    setFruit(() => generateFruit());
+                } else {
+                    let tail = snake.at(-1);
+                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
+                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
                 }
             }
         }
+    }, [snake, fruit, direction, generateFruit]);
 
-        setBoard(board);
-
-    }, [snake, fruit, direction, generateFruit, board])
 
     useEffect(() => {
         if (!isGameOn) return;
@@ -147,24 +140,35 @@ function Game() {
         return () => clearInterval(intervalID);
     }, [isGameOn, renderSnakeAndFruit]);
 
+    // useEffect(() => {
+    //     if (boardRef.current) {
+    //         console.log(boardRef.current.children[0].children[1]); 
+    //     }
+    // }, []); 
+
+    function returnColor(row, col) {
+        if (row * BOARD_SIZE + col === 217) return "red";
+        else if (row * BOARD_SIZE + col === 207) return "blue";
+        return null;
+    }
+
     return (
-        <div className = "content">
-            <div className="board">
-                {board.map((row, rowIndex) => (
-                    <div key={rowIndex} className="row">
-                        {row.map((col, colIndex) => (
-                            <div
+        <div className="content">
+            <div ref={boardRef} className="board">
+                {board.map((row, rowIndex) => {
+                    return <div key={rowIndex} className="row">
+                        {row.map((col, colIndex) => {
+                            return <div
                                 key={colIndex}
-                                id={String(((rowIndex * BOARD_SIZE) + colIndex))}
                                 className="cell"
-                                style={{ backgroundColor: snake.includes(rowIndex * BOARD_SIZE + colIndex) ? "green" : (fruit === (rowIndex * BOARD_SIZE + colIndex) ? "red" : null) }}
+                                style={{ backgroundColor: returnColor(rowIndex, colIndex) }}
                             >
                             </div>
-                        ))}
+                        })}
                     </div>
-                ))}
+                })}
             </div>
-            
+
         </div>
 
     );
