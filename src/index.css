@@ -19,7 +19,7 @@ body{
   flex-direction: column;
   width: fit-content;
   height: fit-content;
-  margin: auto;
+  /* margin: auto;   */
   border: 1px solid black; 
 }
 
@@ -35,4 +35,17 @@ body{
   height: 4vh;
   border: 1px solid black;  
   box-sizing: border-box;     
+}
+
+.stats{
+  /* background-color: cyan; */
+  width: 40vh;
+  height: 40vh;
+}
+
+.content{
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  /* gap: 10vw; */
 }
