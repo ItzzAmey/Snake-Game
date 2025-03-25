@@ -10,17 +10,23 @@ function Game() {
     const [score, setScore] = useState(0);
     const [bestScore, setBestScore] = useState(0);
     const boardRef = useRef(null);
+
     const board = new Array(BOARD_SIZE).fill(null).map(() => (new Array(BOARD_SIZE).fill(0)));
+
+    // Changes the color of the cell to red (fruit)
     useEffect(() => {
         if (boardRef.current) {
             boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = "red";
         }
     }, [fruit])
 
+    // Updates the best score
     useEffect(() => {
         if (score > bestScore) setBestScore(score);
     }, [score])
 
+
+    // Tackles the running game movements
     useEffect(() => {
         if (isGameOn == 1) {
             function handleKeyDown(event) {
@@ -60,12 +66,15 @@ function Game() {
         }
     }, [isGameOn]); // The single event listener is there until the component unmounts(is remove from the Virtual DOM)
 
+    // Generates a new fruit 
     const generateFruit = useCallback(() => {
         var pos = Math.floor(Math.random() * 400);
         while (snake.includes(pos)) pos = Math.floor(Math.random() * 400);
         return pos;
     }, [snake])
 
+    // MAIN piece of code
+    // Changes the head and tail of the snake
     const renderSnakeAndFruit = useCallback(() => {
         if (direction === "UP") {
             if ((snake[0] <= (BOARD_SIZE - 1) && snake[0] >= 0) || snake.includes(snake[0] - BOARD_SIZE)) {
@@ -150,11 +159,15 @@ function Game() {
             }
         }
     }, [snake, fruit, direction, generateFruit, score]);
+    
+    // For the inital/starting configuration of the board
     function returnColor(row, col) {
         if (row * BOARD_SIZE + col === 217) return "red";
         else if (row * BOARD_SIZE + col === 207) return "blue";
         return null;
     }
+
+    // Deals with starting and post-losing game initial-movements 
     useEffect(() => {
         if (isGameOn === 0) {
             function handleKeyDown(event) {
@@ -257,6 +270,7 @@ function Game() {
         }
     }, [isGameOn])
 
+    // Keeps the game running
     useEffect(() => {
         if (!isGameOn) return;
         const intervalID = setInterval(() => {
@@ -266,13 +280,7 @@ function Game() {
         return () => clearInterval(intervalID);
     }, [isGameOn, renderSnakeAndFruit]);
 
-    // useEffect(() => {
-    //     if (boardRef.current) {
-    //         console.log(boardRef.current.children[0].children[1]); 
-    //     }
-    // }, []); 
-
-
+    // Initial state of the Board
     return (
         <div className="content">
             <div ref={boardRef} className="board">
