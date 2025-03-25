@@ -1,17 +1,33 @@
-body{
-  background-image: url("https://opengameart.org/sites/default/files/grass_template2.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
+body {
+  background-color: #0b132b;
+  font-family: "Pixelify Sans", sans-serif;
   margin: 0;
   padding: 0;
 }
 
-.head{
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 10px #ff00ff;
+  }
+
+  50% {
+    text-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+  }
+
+  100% {
+    text-shadow: 0 0 10px #ff00ff;
+  }
+}
+
+.head {
   font-family: "Pixelify Sans", sans-serif;
-  font-size: 4rem;
-  text-align: center;
+  /* color: cyan; */
+  margin-left: 2rem;
+  font-size: 3rem;
   height: 10vh;
   margin-bottom: 5vh;
+  color: cyan;
+  animation: glow 1.5s infinite alternate;
 }
 
 .board {
@@ -19,33 +35,41 @@ body{
   flex-direction: column;
   width: fit-content;
   height: fit-content;
-  /* margin: auto;   */
-  border: 1px solid black; 
+  /* margin-left: 30%;   */
+  border: 0.1px solid #3a506b;
 }
 
-.row{
+.row {
   width: fit-content;
   height: fit-content;
   display: flex;
-  
+
 }
 
-.cell{
+.cell {
   width: 4vh;
   height: 4vh;
-  border: 1px solid black;  
-  box-sizing: border-box;     
+  border: 0.1px solid #3a506b;
+  box-sizing: border-box;
 }
 
-.stats{
-  /* background-color: cyan; */
+.stats {
+  color: cyan;
+  width: 50vh;
+  height: 50vh;
+  font-size: 2rem;
+}
+
+
+.press_play{
+  color: cyan;
   width: 40vh;
   height: 40vh;
+  font-size: 2rem;
 }
 
-.content{
+.content {
   display: flex;
+  justify-content: space-around;
   align-items: center;
-  justify-content: space-evenly;
-  /* gap: 10vw; */
 }

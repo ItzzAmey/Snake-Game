@@ -9,6 +9,7 @@ function Game() {
     const [direction, setDirection] = useState("RIGHT");
     const [score, setScore] = useState(0);
     const [bestScore, setBestScore] = useState(0);
+
     const boardRef = useRef(null);
 
     const board = new Array(BOARD_SIZE).fill(null).map(() => (new Array(BOARD_SIZE).fill(0)));
@@ -16,7 +17,7 @@ function Game() {
     // Changes the color of the cell to red (fruit)
     useEffect(() => {
         if (boardRef.current) {
-            boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = "red";
+            boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = " #ff00ff";
         }
     }, [fruit])
 
@@ -73,99 +74,57 @@ function Game() {
         return pos;
     }, [snake])
 
-    // MAIN piece of code
-    // Changes the head and tail of the snake
-    const renderSnakeAndFruit = useCallback(() => {
+    // Returns the new Head
+    const returnNewHead = useCallback(() => {
+        if (direction === "UP") return snake[0] - BOARD_SIZE;
+        if (direction === "DOWN") return snake[0] + BOARD_SIZE;
+        if (direction === "RIGHT") return snake[0] + 1;
+        return snake[0] - 1;
+    }, [direction, snake]);
+
+    // Checks is the new head is valid or not
+    const isValid = useCallback((newHead) => {
         if (direction === "UP") {
-            if ((snake[0] <= (BOARD_SIZE - 1) && snake[0] >= 0) || snake.includes(snake[0] - BOARD_SIZE)) {
-                setGameOn(2);
-                return;
-            } else {
-                let newHead = snake[0] - BOARD_SIZE;
-                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
-
-                if (newHead === fruit) {
-                    setScore(score + 1);
-                    setSnake((prev) => [newHead, ...prev]);
-                    setFruit(() => generateFruit());
-                }
-                else {
-                    let tail = snake.at(-1);
-                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
-                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
-                }
-            }
+            return !(newHead < 0 || snake.includes(newHead));
         }
-
-        else if (direction === "DOWN") {
-            if ((snake[0] >= 380 && snake[0] <= 399) || snake.includes(snake[0] + BOARD_SIZE)) {
-                setGameOn(2);
-                return;
-            } else {
-                let newHead = snake[0] + BOARD_SIZE;
-                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
-
-                if (newHead === fruit) {
-                    setScore(score + 1);
-                    setSnake((prev) => [newHead, ...prev]);
-                    setFruit(() => generateFruit());
-                } else {
-                    let tail = snake.at(-1);
-                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
-                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
-                }
-            }
+        if (direction === "DOWN") {
+            return !(newHead > BOARD_SIZE * BOARD_SIZE - 1 || snake.includes(newHead));
         }
-
-        else if (direction === "RIGHT") {
-            if ((snake[0] + 1) % BOARD_SIZE === 0 || snake.includes(snake[0] + 1)) {
-                setGameOn(2);
-                return;
-            } else {
-                let newHead = snake[0] + 1;
-                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
-
-                if (newHead === fruit) {
-                    setScore(score + 1);
-                    setSnake((prev) => [newHead, ...prev]);
-                    setFruit(() => generateFruit());
-                }
-
-                else {
-                    let tail = snake.at(-1);
-                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
-                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
-                }
-            }
+        if (direction === "RIGHT") {
+            return newHead % BOARD_SIZE !== 0; // Fix: Should be false for invalid moves
         }
+        // Left
+        return (newHead + 1) % BOARD_SIZE !== 0; // Fix: Should be false for invalid moves
+    }, [direction, snake]);
 
-        else { // LEFT
-            if (snake[0] % BOARD_SIZE === 0 || snake.includes(snake[0] - 1)) {
-                setGameOn(2);
-                return;
-            } else {
-                let newHead = snake[0] - 1;
-                boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
+    // Main part of code
+    // Causes the rendering of the snake
+    const renderSnakeAndFruit = useCallback(() => {
 
-                if (newHead === fruit) {
-                    setScore(score + 1);
-                    setSnake((prev) => [newHead, ...prev]);
-                    setFruit(() => generateFruit());
-                } else {
-                    let tail = snake.at(-1);
-                    boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
-                    setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
-                }
-            }
+        var newHead = returnNewHead();
+        if (!isValid(newHead)) {
+            setGameOn(2);
+            return;
         }
-    }, [snake, fruit, direction, generateFruit, score]);
-    
+        boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
+        if (newHead === fruit) {
+            setScore(score + 1);
+            setSnake((prev) => [newHead, ...prev]);
+            setFruit(() => generateFruit());
+        } else {
+            let tail = snake.at(-1);
+            boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
+            setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
+        }
+    }, [snake, fruit, generateFruit, score, isValid, returnNewHead]);
+
     // For the inital/starting configuration of the board
-    function returnColor(row, col) {
-        if (row * BOARD_SIZE + col === 217) return "red";
-        else if (row * BOARD_SIZE + col === 207) return "blue";
+    const returnColor = useCallback((row, col) => {
+        const index = row * BOARD_SIZE + col;
+        if (index === 217) return "#ff00ff";
+        if (index === 207) return "blue";
         return null;
-    }
+    }, []);
 
     // Deals with starting and post-losing game initial-movements 
     useEffect(() => {
@@ -210,6 +169,10 @@ function Game() {
         }
 
         else if ((isGameOn === 2)) {
+                document.body.style.backgroundColor = "red";
+            setTimeout(() => {
+                document.body.style.backgroundColor = "#0b132b";
+            }, 50);
             function handleKeyDown2(event) {
                 if (["ArrowUp", "w", "W", "ArrowDown", "s", "S", "ArrowLeft", "a", "A", "ArrowRight", "d", "D"].includes(event.key)) {
                     setGameOn(1);
@@ -283,6 +246,10 @@ function Game() {
     // Initial state of the Board
     return (
         <div className="content">
+
+            <div className = "stats"> 
+            </div>
+
             <div ref={boardRef} className="board">
                 {board.map((row, rowIndex) => {
                     return <div key={rowIndex} className="row">

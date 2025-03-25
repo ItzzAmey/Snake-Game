@@ -4,7 +4,7 @@ function Stats(props) {
     return (
         <div className="stats">
             {props.isGameOn === 0
-                ? "Press Arrows/WASD To Continue"
+                ? "Arrows/WASD To Play"
                 : (props.isGameOn === 1
                     ? <div>
                         Current Score : {props.score} <br />
@@ -12,10 +12,9 @@ function Stats(props) {
                     </div>
 
                     : <div>
-                        Game Over <br />
+                        Game over <br />Arrows/WASD To Play<br /> <br />
                         Round's Score : {props.score} <br />
                         Best Score : {props.bestScore} <br />
-                        Press Arrows/WASD To Play Again
                     </div>
                 )}
         </div>
