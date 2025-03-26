@@ -26,8 +26,11 @@ body {
   font-size: 3rem;
   height: 10vh;
   margin-bottom: 5vh;
-  color: cyan;
-  animation: glow 1.5s infinite alternate;
+  color: white;
+  /* animation: glow 1.5s infinite alternate; */
+
+  display: flex;
+  justify-content: space-between;
 }
 
 .board {
@@ -61,7 +64,7 @@ body {
 }
 
 
-.press_play{
+.press_play {
   color: cyan;
   width: 40vh;
   height: 40vh;
@@ -72,4 +75,28 @@ body {
   display: flex;
   justify-content: space-around;
   align-items: center;
+}
+
+.modes {
+  display: flex;
+  margin-right: 2rem;
+}
+
+select {
+  font-family: "Pixelify Sans", sans-serif;
+  font-size: 1rem;
+}
+
+.hover_div_snake {
+  visibility: hidden;
+  font-size: 1rem;
+  color: #fff;
+  text-align: center;
+  position: absolute;
+  transform: translate(-90%, 50%);
+  white-space: nowrap;
+}
+
+.dropdown_div_snake:hover .hover_div_snake {
+  visibility: visible;
 }

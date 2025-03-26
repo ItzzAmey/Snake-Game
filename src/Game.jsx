@@ -1,18 +1,38 @@
 import { React, useCallback, useEffect, useRef, useState } from "react";
 import Stats from "./Stats";
-const BOARD_SIZE = 20;
-function Game() {
+import Head from "./Head";
 
+const BOARD_SIZE = 20;
+
+function Game() {
     const [isGameOn, setGameOn] = useState(0);
     const [fruit, setFruit] = useState(217);
     const [snake, setSnake] = useState([207]);
     const [direction, setDirection] = useState("RIGHT");
     const [score, setScore] = useState(0);
     const [bestScore, setBestScore] = useState(0);
-
+    const [snakeColor, setSnakeColor] = useState("blue");
     const boardRef = useRef(null);
 
     const board = new Array(BOARD_SIZE).fill(null).map(() => (new Array(BOARD_SIZE).fill(0)));
+
+    // Handles the changing of snake color
+    function handleSnakeColorChange(color) {
+        setSnakeColor(color);
+        snake.forEach((ele) => {
+            boardRef.current.children[Math.floor(ele / BOARD_SIZE)].children[ele % BOARD_SIZE].style.backgroundColor = color;
+        })
+    }
+
+    // Game Over effect
+    useEffect(() => {
+        if (isGameOn === 2) {
+            document.body.style.backgroundColor = "red";
+            setTimeout(() => {
+                document.body.style.backgroundColor = "#0b132b";
+            }, 50);
+        }
+    }, [isGameOn])
 
     // Changes the color of the cell to red (fruit)
     useEffect(() => {
@@ -24,7 +44,7 @@ function Game() {
     // Updates the best score
     useEffect(() => {
         if (score > bestScore) setBestScore(score);
-    }, [score])
+    }, [score, bestScore])
 
 
     // Tackles the running game movements
@@ -106,7 +126,7 @@ function Game() {
             setGameOn(2);
             return;
         }
-        boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = "blue";
+        boardRef.current.children[Math.floor(newHead / BOARD_SIZE)].children[newHead % BOARD_SIZE].style.backgroundColor = snakeColor;
         if (newHead === fruit) {
             setScore(score + 1);
             setSnake((prev) => [newHead, ...prev]);
@@ -116,15 +136,7 @@ function Game() {
             boardRef.current.children[Math.floor(tail / BOARD_SIZE)].children[tail % BOARD_SIZE].style.backgroundColor = null;
             setSnake((prev) => [newHead, ...prev.slice(0, -1)]);
         }
-    }, [snake, fruit, generateFruit, score, isValid, returnNewHead]);
-
-    // For the inital/starting configuration of the board
-    const returnColor = useCallback((row, col) => {
-        const index = row * BOARD_SIZE + col;
-        if (index === 217) return "#ff00ff";
-        if (index === 207) return "blue";
-        return null;
-    }, []);
+    }, [snake, fruit, generateFruit, score, isValid, returnNewHead, snakeColor]);
 
     // Deals with starting and post-losing game initial-movements 
     useEffect(() => {
@@ -169,10 +181,6 @@ function Game() {
         }
 
         else if ((isGameOn === 2)) {
-                document.body.style.backgroundColor = "red";
-            setTimeout(() => {
-                document.body.style.backgroundColor = "#0b132b";
-            }, 50);
             function handleKeyDown2(event) {
                 if (["ArrowUp", "w", "W", "ArrowDown", "s", "S", "ArrowLeft", "a", "A", "ArrowRight", "d", "D"].includes(event.key)) {
                     setGameOn(1);
@@ -218,7 +226,7 @@ function Game() {
                     if (boardRef) {
                         board.forEach((row, rowIndex) => {
                             row.forEach((col, colIndex) => {
-                                boardRef.current.children[rowIndex].children[colIndex].style.backgroundColor = returnColor(rowIndex, colIndex);
+                                boardRef.current.children[rowIndex].children[colIndex].style.backgroundColor = rowIndex * BOARD_SIZE + colIndex == 217 ? "#ff00ff" : (rowIndex * BOARD_SIZE + colIndex == 207 ? snakeColor : null);
                             })
                         })
                     }
@@ -231,7 +239,7 @@ function Game() {
                 window.removeEventListener("keydown", handleKeyDown2);
             };
         }
-    }, [isGameOn])
+    }, [isGameOn, snakeColor])
 
     // Keeps the game running
     useEffect(() => {
@@ -245,27 +253,30 @@ function Game() {
 
     // Initial state of the Board
     return (
-        <div className="content">
+        <div>
+            <Head handleSnakeColorChange={handleSnakeColorChange} />
+            <div className="content">
 
-            <div className = "stats"> 
+                <div className="stats">
+                </div>
+
+                <div ref={boardRef} className="board">
+                    {board.map((row, rowIndex) => {
+                        return <div key={rowIndex} className="row">
+                            {row.map((col, colIndex) => {
+                                return <div
+                                    key={colIndex}
+                                    className="cell"
+                                    style={{ backgroundColor: rowIndex * BOARD_SIZE + colIndex == 217 ? "#ff00ff" : (rowIndex * BOARD_SIZE + colIndex == 207 ? "blue" : null) }}
+                                >
+                                </div>
+                            })}
+                        </div>
+                    })}
+                </div>
+
+                <Stats isGameOn={isGameOn} score={score} bestScore={bestScore} />
             </div>
-
-            <div ref={boardRef} className="board">
-                {board.map((row, rowIndex) => {
-                    return <div key={rowIndex} className="row">
-                        {row.map((col, colIndex) => {
-                            return <div
-                                key={colIndex}
-                                className="cell"
-                                style={{ backgroundColor: returnColor(rowIndex, colIndex) }}
-                            >
-                            </div>
-                        })}
-                    </div>
-                })}
-            </div>
-
-            <Stats isGameOn={isGameOn} score={score} bestScore={bestScore} />
         </div>
     );
 }
