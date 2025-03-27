@@ -5,6 +5,7 @@ import Head from "./Head";
 const BOARD_SIZE = 20;
 
 function Game() {
+
     const [isGameOn, setGameOn] = useState(0);
     const [fruit, setFruit] = useState(217);
     const [snake, setSnake] = useState([207]);
@@ -12,8 +13,8 @@ function Game() {
     const [score, setScore] = useState(0);
     const [bestScore, setBestScore] = useState(0);
     const [snakeColor, setSnakeColor] = useState("blue");
+    const [snakeSpeed, setSnakeSpeed] = useState(100);
     const boardRef = useRef(null);
-
     const board = new Array(BOARD_SIZE).fill(null).map(() => (new Array(BOARD_SIZE).fill(0)));
 
     // Handles the changing of snake color
@@ -35,9 +36,19 @@ function Game() {
     }, [isGameOn])
 
     // Changes the color of the cell to red (fruit)
+
+    // .set the color according to the type of fruit
+    // .change the speed of snake
+
+    // .red == fast
+    // .pink(currently) == normal
+    // green == slow
+
     useEffect(() => {
         if (boardRef.current) {
-            boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = " #ff00ff";
+            if (fruit % 3 === 0) boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = "red";
+            else if (fruit % 3 === 1) boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = "pink ";
+            else boardRef.current.children[Math.floor(fruit / BOARD_SIZE)].children[fruit % BOARD_SIZE].style.backgroundColor = "green";
         }
     }, [fruit])
 
@@ -130,6 +141,11 @@ function Game() {
         if (newHead === fruit) {
             setScore(score + 1);
             setSnake((prev) => [newHead, ...prev]);
+
+            if (fruit % 3 === 0) setSnakeSpeed(50);
+            else if (fruit % 3 === 1) setSnakeSpeed(100);
+            else setSnakeSpeed(150);
+
             setFruit(() => generateFruit());
         } else {
             let tail = snake.at(-1);
@@ -226,7 +242,7 @@ function Game() {
                     if (boardRef) {
                         board.forEach((row, rowIndex) => {
                             row.forEach((col, colIndex) => {
-                                boardRef.current.children[rowIndex].children[colIndex].style.backgroundColor = rowIndex * BOARD_SIZE + colIndex == 217 ? "#ff00ff" : (rowIndex * BOARD_SIZE + colIndex == 207 ? snakeColor : null);
+                                boardRef.current.children[rowIndex].children[colIndex].style.backgroundColor = rowIndex * BOARD_SIZE + colIndex == 217 ? "pink" : (rowIndex * BOARD_SIZE + colIndex == 207 ? snakeColor : null);
                             })
                         })
                     }
@@ -239,17 +255,17 @@ function Game() {
                 window.removeEventListener("keydown", handleKeyDown2);
             };
         }
-    }, [isGameOn, snakeColor])
+    }, [isGameOn, snakeColor, board])
 
     // Keeps the game running
     useEffect(() => {
         if (!isGameOn) return;
         const intervalID = setInterval(() => {
             renderSnakeAndFruit();
-        }, 100);
+        }, snakeSpeed);
 
         return () => clearInterval(intervalID);
-    }, [isGameOn, renderSnakeAndFruit]);
+    }, [isGameOn, snakeSpeed, renderSnakeAndFruit]);
 
     // Initial state of the Board
     return (

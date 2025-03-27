@@ -13,7 +13,7 @@ function Head(props) {
         <div className="head">
             <div>Snake Game</div>
             <div className="modes">
-                <div class = "dropdown_div_snake">
+                <div className = "dropdown_div_snake">
                     <select id="color_snake_dropdown" value={selectedColor}  onChange={handleSnakeColorChange}>
                         <option value="Blue">Blue</option>
                         <option value="Cyan">Cyan</option>
